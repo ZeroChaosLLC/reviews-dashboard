@@ -6,703 +6,257 @@
 <title>ZCC — Review Admin</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap');
-
-  :root {
-    --black: #0a0a0a;
-    --surface: #0f0f0f;
-    --surface2: #161616;
-    --border: #2a2a2a;
-    --white: #f0ede6;
-    --gold: #c9a84c;
-    --muted: #555;
-    --green: #4a7c5f;
-    --red: #8b3a3a;
-    --blue: #3a5f7c;
-    --pending: #7c5a3a;
-    --approved: #4a7c5f;
-  }
-
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-
-  body {
-    background: var(--black);
-    color: var(--white);
-    font-family: 'DM Mono', monospace;
-    min-height: 100vh;
-  }
-
-  /* LOGIN */
-  #login-screen {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    padding: 24px;
-  }
-
-  .login-box {
-    width: 100%;
-    max-width: 360px;
-    border: 1px solid var(--border);
-    padding: 40px 32px;
-    background: var(--surface);
-  }
-
-  .login-box h1 {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 22px;
-    letter-spacing: 0.15em;
-    color: var(--white);
-    margin-bottom: 4px;
-  }
-
-  .login-box p {
-    font-size: 10px;
-    color: var(--muted);
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    margin-bottom: 32px;
-  }
-
-  .login-box input {
-    width: 100%;
-    background: var(--black);
-    border: 1px solid var(--border);
-    color: var(--white);
-    font-family: 'DM Mono', monospace;
-    font-size: 13px;
-    padding: 12px 14px;
-    margin-bottom: 12px;
-    outline: none;
-    letter-spacing: 0.05em;
-  }
-
-  .login-box input:focus { border-color: var(--gold); }
-
-  .login-box button {
-    width: 100%;
-    background: var(--gold);
-    color: var(--black);
-    border: none;
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 16px;
-    letter-spacing: 0.15em;
-    padding: 12px;
-    cursor: pointer;
-    margin-top: 8px;
-  }
-
-  .login-box button:hover { opacity: 0.9; }
-  .login-error { font-size: 11px; color: var(--red); margin-top: 10px; letter-spacing: 0.08em; display: none; }
-
-  /* MAIN APP */
-  #app { display: none; }
-
-  header {
-    border-bottom: 1px solid var(--border);
-    padding: 16px 24px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: sticky;
-    top: 0;
-    background: var(--black);
-    z-index: 10;
-  }
-
-  .header-brand {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 18px;
-    letter-spacing: 0.15em;
-    color: var(--gold);
-  }
-
-  .header-right {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-  }
-
-  .header-stats {
-    font-size: 10px;
-    color: var(--muted);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-  }
-
-  .header-stats span { color: var(--white); margin-left: 4px; }
-
-  .btn-logout {
-    font-size: 10px;
-    color: var(--muted);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    cursor: pointer;
-    background: none;
-    border: none;
-    font-family: 'DM Mono', monospace;
-  }
-
-  .btn-logout:hover { color: var(--white); }
-
-  /* FILTERS */
-  .filters {
-    padding: 16px 24px;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-
-  .filter-btn {
-    font-family: 'DM Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    padding: 6px 14px;
-    border: 1px solid var(--border);
-    background: none;
-    color: var(--muted);
-    cursor: pointer;
-    transition: all 0.15s ease;
-  }
-
-  .filter-btn.active, .filter-btn:hover {
-    border-color: var(--gold);
-    color: var(--gold);
-  }
-
-  .filter-btn.pending-btn.active, .filter-btn.pending-btn:hover {
-    border-color: #c9843a;
-    color: #c9843a;
-  }
-
-  /* REVIEWS */
-  .reviews-container {
-    padding: 24px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    max-width: 800px;
-    margin: 0 auto;
-  }
-
-  .review-card {
-    border: 1px solid var(--border);
-    background: var(--surface);
-    overflow: hidden;
-    transition: border-color 0.2s;
-  }
-
-  .review-card:hover { border-color: #3a3a3a; }
-  .review-card.has-response { border-left: 2px solid var(--gold); }
-  .review-card.status-pending { border-left: 2px solid #c9843a; }
-
-  .review-card__top {
-    padding: 20px 20px 0;
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-
-  .review-stars { color: var(--gold); font-size: 13px; letter-spacing: 2px; }
-
-  .review-meta {
-    font-size: 10px;
-    color: var(--muted);
-    letter-spacing: 0.1em;
-    text-align: right;
-    line-height: 1.6;
-  }
-
-  .review-meta .verified { color: var(--green); margin-left: 6px; }
-
-  .review-product {
-    padding: 8px 20px 0;
-    font-size: 10px;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--muted);
-  }
-
-  .review-product span { color: var(--white); }
-
-  .review-stood-out {
-    padding: 10px 20px 0;
-    font-size: 10px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--gold);
-    opacity: 0.8;
-  }
-
-  .review-stood-out span {
-    color: var(--white);
-    text-transform: none;
-    letter-spacing: 0;
-    font-size: 12px;
-  }
-
-  .review-text {
-    padding: 12px 20px;
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 15px;
-    font-style: italic;
-    line-height: 1.7;
-    color: #ccc;
-  }
-
-  /* STATUS AREA */
-  .status-area {
-    padding: 12px 20px;
-    border-top: 1px solid var(--border);
-    background: var(--surface2);
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .status-label {
-    font-size: 9px;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: var(--muted);
-    flex-shrink: 0;
-  }
-
-  .status-select {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    padding: 6px 12px;
-    background: var(--black);
-    border: 1px solid var(--border);
-    color: var(--white);
-    cursor: pointer;
-    outline: none;
-    appearance: none;
-    -webkit-appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23555'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 10px center;
-    padding-right: 28px;
-    min-width: 130px;
-  }
-
-  .status-select:focus { border-color: var(--gold); }
-  .status-select option { background: #1a1a1a; }
-
-  .status-select.is-pending { border-color: #7c5a3a; color: #c9843a; }
-  .status-select.is-approved { border-color: #3a7c5a; color: #4ac98a; }
-
-  .btn-status-save {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 13px;
-    letter-spacing: 0.12em;
-    padding: 6px 16px;
-    background: none;
-    border: 1px solid var(--border);
-    color: var(--muted);
-    cursor: pointer;
-    transition: all 0.15s ease;
-  }
-
-  .btn-status-save:hover { border-color: var(--gold); color: var(--gold); }
-  .btn-status-save:disabled { opacity: 0.4; cursor: not-allowed; }
-
-  .status-saved {
-    font-size: 10px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--green);
-    display: none;
-  }
-
-  /* RESPONSE AREA */
-  .response-area {
-    border-top: 1px solid var(--border);
-    padding: 16px 20px;
-    background: var(--surface2);
-  }
-
-  .response-label {
-    font-size: 9px;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: var(--gold);
-    margin-bottom: 10px;
-  }
-
-  .response-area textarea {
-    width: 100%;
-    background: var(--black);
-    border: 1px solid var(--border);
-    color: var(--white);
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 14px;
-    line-height: 1.7;
-    padding: 12px 14px;
-    resize: vertical;
-    min-height: 80px;
-    outline: none;
-  }
-
-  .response-area textarea:focus { border-color: var(--gold); }
-
-  .response-actions {
-    display: flex;
-    gap: 8px;
-    margin-top: 10px;
-    align-items: center;
-  }
-
-  .btn-save {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 14px;
-    letter-spacing: 0.12em;
-    padding: 8px 20px;
-    background: var(--gold);
-    color: var(--black);
-    border: none;
-    cursor: pointer;
-  }
-
-  .btn-save:hover { opacity: 0.9; }
-  .btn-save:disabled { opacity: 0.4; cursor: not-allowed; }
-
-  .btn-clear {
-    font-family: 'DM Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    padding: 8px 14px;
-    background: none;
-    border: 1px solid var(--border);
-    color: var(--muted);
-    cursor: pointer;
-  }
-
-  .btn-clear:hover { border-color: var(--red); color: var(--red); }
-
-  .save-status {
-    font-size: 10px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--green);
-    display: none;
-  }
-
-  .empty-state {
-    text-align: center;
-    padding: 64px 24px;
-    font-size: 11px;
-    color: var(--muted);
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-  }
-
-  .loading-state {
-    text-align: center;
-    padding: 64px 24px;
-    font-size: 11px;
-    color: var(--muted);
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-  }
-
-  .pending-badge {
-    display: inline-block;
-    font-size: 9px;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    padding: 2px 8px;
-    border: 1px solid #7c5a3a;
-    color: #c9843a;
-    margin-left: 8px;
-    vertical-align: middle;
-  }
+  :root { --black:#0a0a0a; --surface:#0f0f0f; --surface2:#161616; --border:#2a2a2a; --white:#f0ede6; --gold:#c9a84c; --muted:#555; --green:#4a7c5f; --red:#8b3a3a; }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--black);color:var(--white);font-family:'DM Mono',monospace;min-height:100vh}
+  #login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px}
+  .login-box{width:100%;max-width:360px;border:1px solid var(--border);padding:40px 32px;background:var(--surface)}
+  .login-box h1{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:.15em;color:var(--white);margin-bottom:4px}
+  .login-box p{font-size:10px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-bottom:32px}
+  .login-box input{width:100%;background:var(--black);border:1px solid var(--border);color:var(--white);font-family:'DM Mono',monospace;font-size:13px;padding:12px 14px;margin-bottom:12px;outline:none;letter-spacing:.05em}
+  .login-box input:focus{border-color:var(--gold)}
+  .login-box button{width:100%;background:var(--gold);color:var(--black);border:none;font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:.15em;padding:12px;cursor:pointer;margin-top:8px}
+  .login-error{font-size:11px;color:var(--red);margin-top:10px;letter-spacing:.08em;display:none}
+  #app{display:none}
+  header{border-bottom:1px solid var(--border);padding:16px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--black);z-index:10}
+  .header-brand{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:.15em;color:var(--gold)}
+  .header-right{display:flex;align-items:center;gap:20px}
+  .header-stats{font-size:10px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase}
+  .header-stats span{color:var(--white);margin-left:4px}
+  .btn{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;padding:7px 14px;border:1px solid var(--border);background:none;color:var(--muted);cursor:pointer}
+  .btn:hover{border-color:var(--gold);color:var(--gold)}
+  .btn-gold{background:var(--gold);border-color:var(--gold);color:var(--black)}
+  .btn-gold:hover{opacity:.85}
+  .btn-logout{font-size:10px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;cursor:pointer;background:none;border:none;font-family:'DM Mono',monospace}
+  .btn-logout:hover{color:var(--white)}
+  .filters{padding:16px 24px;border-bottom:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap}
+  .filter-btn{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;padding:6px 14px;border:1px solid var(--border);background:none;color:var(--muted);cursor:pointer;transition:all .15s ease}
+  .filter-btn.active,.filter-btn:hover{border-color:var(--gold);color:var(--gold)}
+  .reviews-container{padding:24px;display:flex;flex-direction:column;gap:16px;max-width:800px;margin:0 auto}
+  .review-card{border:1px solid var(--border);background:var(--surface);overflow:hidden;transition:border-color .2s}
+  .review-card:hover{border-color:#3a3a3a}
+  .review-card.has-response{border-left:2px solid var(--gold)}
+  .review-card.status-pending{border-left:2px solid #c9843a}
+  .review-card__top{padding:20px 20px 0;display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px}
+  .review-stars{color:var(--gold);font-size:13px;letter-spacing:2px}
+  .review-meta{font-size:10px;color:var(--muted);letter-spacing:.1em;text-align:right;line-height:1.6}
+  .review-meta .verified{color:var(--green);margin-left:6px}
+  .review-product{padding:8px 20px 0;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+  .review-product span{color:var(--white)}
+  .review-stood-out{padding:10px 20px 0;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);opacity:.8}
+  .review-stood-out span{color:var(--white);text-transform:none;letter-spacing:0;font-size:12px}
+  .review-text{padding:12px 20px;font-family:'Cormorant Garamond',serif;font-size:15px;font-style:italic;line-height:1.7;color:#ccc}
+  .status-area{padding:12px 20px;border-top:1px solid var(--border);background:var(--surface2);display:flex;align-items:center;gap:12px}
+  .status-label{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);flex-shrink:0}
+  .status-select{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;padding:6px 12px;background:var(--black);border:1px solid var(--border);color:var(--white);cursor:pointer;outline:none}
+  .response-area{padding:16px 20px;border-top:1px solid var(--border)}
+  .response-label{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+  .response-textarea{width:100%;min-height:90px;background:var(--black);border:1px solid var(--border);color:#ccc;font-family:'DM Mono',monospace;font-size:12px;padding:12px;outline:none;resize:vertical}
+  .response-textarea:focus{border-color:var(--gold)}
+  .response-actions{margin-top:10px;display:flex;gap:8px}
+  .sheets-badge{font-size:9px;letter-spacing:.15em;padding:4px 8px;border:1px solid var(--border);color:var(--muted);margin-left:12px}
+  .sheets-badge.on{color:var(--green);border-color:rgba(74,124,95,.3)}
+  .sheets-badge.off{color:var(--muted)}
+  .toast{position:fixed;bottom:28px;right:28px;background:var(--surface2);border:1px solid var(--border);padding:14px 20px;font-size:11px;letter-spacing:.12em;color:var(--white);z-index:999;transform:translateY(20px);opacity:0;transition:all .3s ease;max-width:320px}
+  .toast.show{transform:translateY(0);opacity:1}
 </style>
 </head>
 <body>
 
-<!-- LOGIN -->
 <div id="login-screen">
   <div class="login-box">
-    <h1>ZERO CHAOS COFFEE</h1>
-    <p>Review Admin</p>
-    <input type="password" id="admin-password" placeholder="Password" />
-    <button onclick="login()">Enter</button>
-    <div class="login-error" id="login-error">Incorrect password.</div>
+    <h1>ZCC — REVIEWS</h1>
+    <p>Admin Access</p>
+    <input type="password" id="pw" placeholder="PASSWORD">
+    <button onclick="doLogin()">ENTER</button>
+    <div id="login-err" class="login-error">INCORRECT</div>
   </div>
 </div>
 
-<!-- APP -->
 <div id="app">
   <header>
-    <div class="header-brand">ZCC — REVIEWS</div>
+    <div class="header-brand">ZCC — REVIEWS <span id="sheets-status" class="sheets-badge off">SHEETS OFF</span></div>
     <div class="header-right">
-      <div class="header-stats">
-        Total <span id="stat-total">—</span> &nbsp;
-        Pending <span id="stat-pending">—</span> &nbsp;
-        Avg <span id="stat-avg">—</span>
-      </div>
-      <button class="btn-logout" onclick="logout()">Logout</button>
+      <div class="header-stats">TOTAL <span id="total-count">0</span> &nbsp; PENDING <span id="pending-count">0</span></div>
+      <button class="btn" onclick="exportCSV()">EXPORT CSV</button>
+      <button class="btn btn-gold" onclick="exportToSheets()">EXPORT TO SHEETS</button>
+      <button class="btn-logout" onclick="doLogout()">LOGOUT</button>
     </div>
   </header>
 
   <div class="filters">
-    <button class="filter-btn active" onclick="setFilter('all', this)">All</button>
-    <button class="filter-btn pending-btn" onclick="setFilter('pending', this)">Pending</button>
-    <button class="filter-btn" onclick="setFilter('approved', this)">Approved</button>
-    <button class="filter-btn" onclick="setFilter('unanswered', this)">Unanswered</button>
-    <button class="filter-btn" onclick="setFilter('5', this)">★★★★★</button>
-    <button class="filter-btn" onclick="setFilter('4', this)">★★★★</button>
-    <button class="filter-btn" onclick="setFilter('low', this)">≤ 3 Stars</button>
+    <button class="filter-btn active" data-f="ALL" onclick="setFilter(this,'ALL')">ALL</button>
+    <button class="filter-btn" data-f="PENDING" onclick="setFilter(this,'PENDING')">PENDING</button>
+    <button class="filter-btn" data-f="APPROVED" onclick="setFilter(this,'APPROVED')">APPROVED</button>
+    <button class="filter-btn" data-f="UNANSWERED" onclick="setFilter(this,'UNANSWERED')">UNANSWERED</button>
+    <button class="filter-btn" data-f="5" onclick="setFilter(this,'5')">★★★★★</button>
+    <button class="filter-btn" data-f="4" onclick="setFilter(this,'4')">★★★★</button>
+    <button class="filter-btn" data-f="3" onclick="setFilter(this,'3')">≤ 3 STARS</button>
   </div>
 
   <div class="reviews-container" id="reviews-container">
-    <div class="loading-state">Loading reviews...</div>
+    <div style="text-align:center;padding:60px;color:#555;font-size:11px;letter-spacing:.2em">LOADING REVIEWS...</div>
   </div>
 </div>
 
+<div class="toast" id="toast"></div>
+
 <script>
-  const SUPABASE_URL = 'https://nhdypjjikdcpmjjbjalb.supabase.co';
-  const SUPABASE_SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5oZHlwamppa2RjcG1qamJqYWxiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1ODM2OTksImV4cCI6MjA5MzE1OTY5OX0.hF4kQsmUiCnSvHlIsQZMEoNha_xDq5307CNJRbPiypY';
-  const ADMIN_PASSWORD = 'ZC2001';
+/* ===== CONFIG ===== */
+const SUPABASE_URL = 'https://nhdypjjikdcpmjjbjalb.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5oZHlwamppa2RjcG1qamJqYWxiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1ODM2OTksImV4cCI6MjA5MzE1OTY5OX0.hF4kQsmUiCnSvHlIsQZMEoNha_xDq5307CNJRbPiypY';
+const PASSWORD = 'ZC2001';
+// PASTE YOUR REVIEWS SHEETS WEB APP URL HERE - LEAVE BLANK TO DISABLE
+const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbwSMrAe48xhSc0yhDUDe3l1yavIBLwBnL5Hv-PBY1fO9Zjr0D13r0qB4oBSjb4_HnGOLQ/exec'; // e.g. https://script.google.com/macros/s/XXXX/exec
 
-  let allReviews = [];
-  let currentFilter = 'all';
+let reviews = [];
+let currentFilter = 'ALL';
 
-  function login() {
-    const pw = document.getElementById('admin-password').value;
-    if (pw === ADMIN_PASSWORD) {
-      document.getElementById('login-screen').style.display = 'none';
-      document.getElementById('app').style.display = 'block';
-      loadReviews();
-    } else {
-      document.getElementById('login-error').style.display = 'block';
-    }
+function esc(s){ if(!s) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+async function api(path, method='GET', body){
+  const opts = { method, headers: { 'apikey': SUPABASE_KEY, 'Authorization':'Bearer '+SUPABASE_KEY, 'Content-Type':'application/json' } };
+  if (body) opts.body = JSON.stringify(body);
+  const r = await fetch(SUPABASE_URL+path, opts);
+  if (!r.ok) throw new Error(await r.text());
+  const t = await r.text();
+  return t ? JSON.parse(t) : null;
+}
+
+function doLogin(){
+  if (document.getElementById('pw').value === PASSWORD){
+    document.getElementById('login-screen').style.display='none';
+    document.getElementById('app').style.display='block';
+    initSheetsBadge();
+    loadReviews();
+  } else {
+    document.getElementById('login-err').style.display='block';
+  }
+}
+function doLogout(){ location.reload(); }
+document.getElementById('pw').addEventListener('keydown', e=>{ if(e.key==='Enter') doLogin(); });
+
+function initSheetsBadge(){
+  const b = document.getElementById('sheets-status');
+  if (SHEETS_URL){ b.textContent='SHEETS ON'; b.className='sheets-badge on'; }
+  else { b.textContent='SHEETS OFF'; b.className='sheets-badge off'; }
+}
+
+async function loadReviews(){
+  try {
+    const data = await api('/rest/v1/reviews?select=*&order=created_at.desc');
+    reviews = data || [];
+    render();
+  } catch(e){ document.getElementById('reviews-container').innerHTML = '<div style="text-align:center;padding:60px;color:#8b3a3a">ERROR LOADING</div>'; }
+}
+
+function render(){
+  const container = document.getElementById('reviews-container');
+  let filtered = [...reviews];
+  if (currentFilter === 'PENDING') filtered = filtered.filter(r=>r.status==='PENDING');
+  if (currentFilter === 'APPROVED') filtered = filtered.filter(r=>r.status==='APPROVED');
+  if (currentFilter === 'UNANSWERED') filtered = filtered.filter(r=>!r.response || r.response.trim()==='');
+  if (currentFilter === '5') filtered = filtered.filter(r=>r.stars===5);
+  if (currentFilter === '4') filtered = filtered.filter(r=>r.stars===4);
+  if (currentFilter === '3') filtered = filtered.filter(r=>r.stars<=3);
+
+  document.getElementById('total-count').textContent = reviews.length;
+  document.getElementById('pending-count').textContent = reviews.filter(r=>r.status==='PENDING').length;
+
+  if (!filtered.length){
+    container.innerHTML = '<div style="text-align:center;padding:60px;color:#555;font-size:11px">NO REVIEWS FOUND</div>';
+    return;
   }
 
-  document.getElementById('admin-password').addEventListener('keydown', e => {
-    if (e.key === 'Enter') login();
-  });
-
-  function logout() {
-    document.getElementById('login-screen').style.display = 'flex';
-    document.getElementById('app').style.display = 'none';
-    document.getElementById('admin-password').value = '';
-  }
-
-  function stars(n) {
-    return '★'.repeat(n) + '☆'.repeat(5 - n);
-  }
-
-  function formatDate(ts) {
-    return new Date(ts).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-  }
-
-  async function loadReviews() {
-    try {
-      const res = await fetch(
-        `${SUPABASE_URL}/rest/v1/Reviews?order=created_at.desc`,
-        { headers: { 'apikey': SUPABASE_SERVICE_KEY, 'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}` } }
-      );
-      allReviews = await res.json();
-      updateStats();
-      renderReviews();
-    } catch (err) {
-      document.getElementById('reviews-container').innerHTML = '<div class="empty-state">Failed to load reviews.</div>';
-    }
-  }
-
-  function updateStats() {
-    document.getElementById('stat-total').textContent = allReviews.length;
-    const pending = allReviews.filter(r => r.status === 'pending').length;
-    document.getElementById('stat-pending').textContent = pending;
-    if (allReviews.length) {
-      const avg = (allReviews.reduce((s, r) => s + r.rating, 0) / allReviews.length).toFixed(1);
-      document.getElementById('stat-avg').textContent = avg + ' ★';
-    }
-  }
-
-  function setFilter(f, btn) {
-    currentFilter = f;
-    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    renderReviews();
-  }
-
-  function filteredReviews() {
-    if (currentFilter === 'all') return allReviews;
-    if (currentFilter === 'pending') return allReviews.filter(r => r.status === 'pending');
-    if (currentFilter === 'approved') return allReviews.filter(r => r.status === 'approved');
-    if (currentFilter === 'unanswered') return allReviews.filter(r => !r.response);
-    if (currentFilter === 'low') return allReviews.filter(r => r.rating <= 3);
-    return allReviews.filter(r => r.rating === parseInt(currentFilter));
-  }
-
-  function renderReviews() {
-    const container = document.getElementById('reviews-container');
-    const reviews = filteredReviews();
-
-    if (!reviews.length) {
-      container.innerHTML = '<div class="empty-state">No reviews match this filter.</div>';
-      return;
-    }
-
-    container.innerHTML = reviews.map(r => `
-      <div class="review-card ${r.response ? 'has-response' : ''} ${r.status === 'pending' ? 'status-pending' : ''}" id="card-${r.id}">
-        <div class="review-card__top">
-          <div>
-            <div class="review-stars">${stars(r.rating)}</div>
-            ${r.status === 'pending' ? '<span class="pending-badge">Pending</span>' : ''}
-          </div>
-          <div class="review-meta">
-            ${r.name || 'Anonymous'}${r.verified ? '<span class="verified">✓</span>' : ''}
-            <br>${formatDate(r.created_at)}
-          </div>
-        </div>
-        ${r.product_title ? `<div class="review-product">Product: <span>${r.product_title}</span></div>` : ''}
-        ${r.stood_out ? `<div class="review-stood-out">Stood out: <span>${r.stood_out}</span></div>` : ''}
-        ${r.review ? `<div class="review-text">"${r.review}"</div>` : ''}
-
-        <div class="status-area">
-          <span class="status-label">Status</span>
-          <select
-            class="status-select ${r.status === 'pending' ? 'is-pending' : 'is-approved'}"
-            id="status-select-${r.id}"
-            onchange="onStatusChange('${r.id}', this)"
-          >
-            <option value="pending" ${r.status === 'pending' ? 'selected' : ''}>Pending</option>
-            <option value="approved" ${r.status === 'approved' ? 'selected' : ''}>Approved</option>
-          </select>
-          <button class="btn-status-save" id="status-save-${r.id}" onclick="saveStatus('${r.id}')" disabled>Save</button>
-          <span class="status-saved" id="status-saved-${r.id}">Updated ✓</span>
-        </div>
-
-        <div class="response-area">
-          <div class="response-label">${r.response ? 'Your Response' : 'Write a Response'}</div>
-          <textarea id="textarea-${r.id}" placeholder="Write your response...">${r.response || ''}</textarea>
-          <div class="response-actions">
-            <button class="btn-save" onclick="saveResponse('${r.id}')">Save</button>
-            ${r.response ? `<button class="btn-clear" onclick="clearResponse('${r.id}')">Remove</button>` : ''}
-            <span class="save-status" id="response-status-${r.id}">Saved ✓</span>
-          </div>
+  container.innerHTML = filtered.map(r=>{
+    const stars = '★'.repeat(r.stars||5) + '☆'.repeat(5-(r.stars||5));
+    return `
+    <div class="review-card ${r.response?'has-response':''} ${r.status==='PENDING'?'status-pending':''}">
+      <div class="review-card__top">
+        <div class="review-stars">${stars}</div>
+        <div class="review-meta">${esc(r.name||'Anonymous')} <br> ${r.created_at?new Date(r.created_at).toLocaleDateString():''} ${r.verified?'<span class="verified">✔ VERIFIED</span>':''}</div>
+      </div>
+      <div class="review-product">PRODUCT: <span>${esc(r.product||'')}</span></div>
+      ${r.stood_out?`<div class="review-stood-out">STOOD OUT: <span>${esc(r.stood_out)}</span></div>`:''}
+      <div class="review-text">"${esc(r.text||r.review||'')}"</div>
+      <div class="status-area">
+        <div class="status-label">STATUS</div>
+        <select class="status-select" data-id="${r.id}" onchange="updateStatus(this.dataset.id,this.value)">
+          <option value="PENDING" ${r.status==='PENDING'?'selected':''}>PENDING</option>
+          <option value="APPROVED" ${r.status==='APPROVED'?'selected':''}>APPROVED</option>
+          <option value="REJECTED" ${r.status==='REJECTED'?'selected':''}>REJECTED</option>
+        </select>
+      </div>
+      <div class="response-area">
+        <div class="response-label">YOUR RESPONSE</div>
+        <textarea class="response-textarea" data-id="${r.id}" placeholder="Write response...">${esc(r.response||'')}</textarea>
+        <div class="response-actions">
+          <button class="btn btn-gold" data-id="${r.id}" onclick="saveResponse(this.dataset.id)">SAVE</button>
+          <button class="btn" data-id="${r.id}" onclick="clearResponse(this.dataset.id)">REMOVE</button>
         </div>
       </div>
-    `).join('');
+    </div>`;
+  }).join('');
+}
+
+async function updateStatus(id, status){
+  try { await api('/rest/v1/reviews?id=eq.'+id, 'PATCH', {status}); showToast('STATUS UPDATED'); loadReviews(); }
+  catch(e){ showToast('UPDATE FAILED','error'); }
+}
+async function saveResponse(id){
+  const textarea = document.querySelector(`.response-textarea[data-id="${id}"]`);
+  const response = textarea.value;
+  try { await api('/rest/v1/reviews?id=eq.'+id, 'PATCH', {response}); showToast('RESPONSE SAVED'); loadReviews(); }
+  catch(e){ showToast('SAVE FAILED','error'); }
+}
+async function clearResponse(id){
+  try { await api('/rest/v1/reviews?id=eq.'+id, 'PATCH', {response:''}); showToast('RESPONSE REMOVED'); loadReviews(); }
+  catch(e){ showToast('REMOVE FAILED','error'); }
+}
+function setFilter(btn, f){
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active'); currentFilter = f; render();
+}
+
+/* ===== SHEETS EXPORT - $0 backup, does not affect Supabase quota ===== */
+async function exportToSheets(){
+  if (!SHEETS_URL){ showToast('Set SHEETS_URL first','error'); return; }
+  if (!reviews.length){ showToast('No reviews','error'); return; }
+  showToast('Exporting '+reviews.length+' to Sheets...');
+  for (const r of reviews){
+    const payload = {
+      timestamp: new Date().toISOString(),
+      date: r.created_at || '',
+      name: r.name || '',
+      stars: r.stars || '',
+      product: r.product || '',
+      stood_out: r.stood_out || '',
+      text: r.text || r.review || '',
+      status: r.status || '',
+      response: r.response || '',
+      verified: r.verified ? 'YES' : 'NO'
+    };
+    try { await fetch(SHEETS_URL, {method:'POST', mode:'no-cors', body: JSON.stringify(payload)}); }
+    catch(e){ console.warn(e); }
+    await new Promise(res=>setTimeout(res, 400));
   }
+  showToast('Exported to Sheets','success');
+}
 
-  function onStatusChange(id, selectEl) {
-    const saveBtn = document.getElementById(`status-save-${id}`);
-    saveBtn.disabled = false;
-    const val = selectEl.value;
-    selectEl.className = `status-select ${val === 'pending' ? 'is-pending' : 'is-approved'}`;
-  }
+function exportCSV(){
+  if (!reviews.length) return;
+  const headers = ['Date','Name','Stars','Product','Stood Out','Review','Status','Response'];
+  const rows = reviews.map(r=>[r.created_at, r.name, r.stars, r.product, r.stood_out, r.text||r.review, r.status, r.response].map(v=>`"${String(v||'').replace(/"/g,'""')}"`).join(','));
+  const csv = [headers.join(','), ...rows].join('\n');
+  const blob = new Blob([csv], {type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download='zcc-reviews-'+new Date().toISOString().split('T')[0]+'.csv'; a.click(); URL.revokeObjectURL(url);
+}
 
-  async function saveStatus(id) {
-    const selectEl = document.getElementById(`status-select-${id}`);
-    const newStatus = selectEl.value;
-    const saveBtn = document.getElementById(`status-save-${id}`);
-    const savedEl = document.getElementById(`status-saved-${id}`);
-
-    saveBtn.disabled = true;
-    saveBtn.textContent = '...';
-
-    try {
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/Reviews?id=eq.${id}`, {
-        method: 'PATCH',
-        headers: {
-          'apikey': SUPABASE_SERVICE_KEY,
-          'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
-          'Content-Type': 'application/json',
-          'Prefer': 'return=minimal'
-        },
-        body: JSON.stringify({ status: newStatus })
-      });
-
-      if (res.ok) {
-        const review = allReviews.find(r => r.id === id);
-        if (review) review.status = newStatus;
-
-        const card = document.getElementById(`card-${id}`);
-        card.classList.toggle('status-pending', newStatus === 'pending');
-
-        saveBtn.textContent = 'Save';
-        savedEl.style.display = 'inline';
-        setTimeout(() => { savedEl.style.display = 'none'; }, 2500);
-        updateStats();
-      } else {
-        saveBtn.textContent = 'Error';
-        saveBtn.disabled = false;
-      }
-    } catch (err) {
-      saveBtn.textContent = 'Error';
-      saveBtn.disabled = false;
-    }
-  }
-
-  async function saveResponse(id) {
-    const textarea = document.getElementById(`textarea-${id}`);
-    const text = textarea.value.trim();
-    if (!text) return;
-
-    const btn = document.querySelector(`#card-${id} .btn-save`);
-    btn.disabled = true;
-    btn.textContent = 'Saving...';
-
-    try {
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/Reviews?id=eq.${id}`, {
-        method: 'PATCH',
-        headers: {
-          'apikey': SUPABASE_SERVICE_KEY,
-          'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
-          'Content-Type': 'application/json',
-          'Prefer': 'return=minimal'
-        },
-        body: JSON.stringify({ response: text, responded_at: new Date().toISOString() })
-      });
-
-      if (res.ok) {
-        const review = allReviews.find(r => r.id === id);
-        if (review) { review.response = text; review.responded_at = new Date().toISOString(); }
-
-        const statusEl = document.getElementById(`response-status-${id}`);
-        statusEl.style.display = 'inline';
-        btn.textContent = 'Save';
-        btn.disabled = false;
-        document.getElementById(`card-${id}`).classList.add('has-response');
-        setTimeout(() => { statusEl.style.display = 'none'; }, 2500);
-      }
-    } catch (err) {
-      btn.textContent = 'Error';
-      btn.disabled = false;
-    }
-  }
-
-  async function clearResponse(id) {
-    if (!confirm('Remove this response?')) return;
-
-    await fetch(`${SUPABASE_URL}/rest/v1/Reviews?id=eq.${id}`, {
-      method: 'PATCH',
-      headers: {
-        'apikey': SUPABASE_SERVICE_KEY,
-        'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
-        'Content-Type': 'application/json',
-        'Prefer': 'return=minimal'
-      },
-      body: JSON.stringify({ response: null, responded_at: null })
-    });
-
-    const review = allReviews.find(r => r.id === id);
-    if (review) { review.response = null; review.responded_at = null; }
-    renderReviews();
-  }
+function showToast(msg, type=''){
+  const t = document.getElementById('toast'); t.textContent = msg.toUpperCase(); t.className = 'toast show '+(type==='error'?'':''); 
+  setTimeout(()=>t.className='toast', 3000);
+}
 </script>
-
 </body>
 </html>
