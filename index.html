@@ -1,268 +1,263 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+<!DOCTYPE html><html lang="en"><head>
+<title>Reviews | ZCC</title>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ZCC — Review Admin</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap');
-  :root { --black:#0a0a0a; --surface:#0f0f0f; --surface2:#161616; --border:#2a2a2a; --white:#f0ede6; --gold:#c9a84c; --muted:#555; --green:#4a7c5f; --red:#8b3a3a; }
-  *{margin:0;padding:0;box-sizing:border-box}
-  body{background:var(--black);color:var(--white);font-family:'DM Mono',monospace;min-height:100vh}
-  #login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px}
-  .login-box{width:100%;max-width:360px;border:1px solid var(--border);padding:40px 32px;background:var(--surface)}
-  .login-box h1{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:.15em;color:var(--white);margin-bottom:4px}
-  .login-box p{font-size:10px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-bottom:32px}
-  .login-box input{width:100%;background:var(--black);border:1px solid var(--border);color:var(--white);font-family:'DM Mono',monospace;font-size:13px;padding:12px 14px;margin-bottom:12px;outline:none;letter-spacing:.05em}
-  .login-box input:focus{border-color:var(--gold)}
-  .login-box button{width:100%;background:var(--gold);color:var(--black);border:none;font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:.15em;padding:12px;cursor:pointer;margin-top:8px}
-  .login-error{font-size:11px;color:var(--red);margin-top:10px;letter-spacing:.08em;display:none}
-  #app{display:none}
-  header{border-bottom:1px solid var(--border);padding:16px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--black);z-index:10}
-  .header-brand{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:.15em;color:var(--gold)}
-  .header-right{display:flex;align-items:center;gap:20px}
-  .header-stats{font-size:10px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase}
-  .header-stats span{color:var(--white);margin-left:4px}
-  .btn{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;padding:7px 14px;border:1px solid var(--border);background:none;color:var(--muted);cursor:pointer}
-  .btn:hover{border-color:var(--gold);color:var(--gold)}
-  .btn-gold{background:var(--gold);border-color:var(--gold);color:var(--black)}
-  .btn-gold:hover{opacity:.85}
-  .btn-logout{font-size:10px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;cursor:pointer;background:none;border:none;font-family:'DM Mono',monospace}
-  .btn-logout:hover{color:var(--white)}
-  .filters{padding:16px 24px;border-bottom:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap}
-  .filter-btn{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;padding:6px 14px;border:1px solid var(--border);background:none;color:var(--muted);cursor:pointer;transition:all .15s ease}
-  .filter-btn.active,.filter-btn:hover{border-color:var(--gold);color:var(--gold)}
-  .reviews-container{padding:24px;display:flex;flex-direction:column;gap:16px;max-width:800px;margin:0 auto}
-  .review-card{border:1px solid var(--border);background:var(--surface);overflow:hidden;transition:border-color .2s}
-  .review-card:hover{border-color:#3a3a3a}
-  .review-card.has-response{border-left:2px solid var(--gold)}
-  .review-card.status-pending{border-left:2px solid #c9843a}
-  .review-card__top{padding:20px 20px 0;display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px}
-  .review-stars{color:var(--gold);font-size:13px;letter-spacing:2px}
-  .review-meta{font-size:10px;color:var(--muted);letter-spacing:.1em;text-align:right;line-height:1.6}
-  .review-meta .verified{color:var(--green);margin-left:6px}
-  .review-product{padding:8px 20px 0;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
-  .review-product span{color:var(--white)}
-  .review-stood-out{padding:10px 20px 0;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);opacity:.8}
-  .review-stood-out span{color:var(--white);text-transform:none;letter-spacing:0;font-size:12px}
-  .review-text{padding:12px 20px;font-family:'Cormorant Garamond',serif;font-size:15px;font-style:italic;line-height:1.7;color:#ccc}
-  .status-area{padding:12px 20px;border-top:1px solid var(--border);background:var(--surface2);display:flex;align-items:center;gap:12px}
-  .status-label{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);flex-shrink:0}
-  .status-select{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;padding:6px 12px;background:var(--black);border:1px solid var(--border);color:var(--white);cursor:pointer;outline:none}
-  .response-area{padding:16px 20px;border-top:1px solid var(--border)}
-  .response-label{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
-  .response-textarea{width:100%;min-height:90px;background:var(--black);border:1px solid var(--border);color:#ccc;font-family:'DM Mono',monospace;font-size:12px;padding:12px;outline:none;resize:vertical}
-  .response-textarea:focus{border-color:var(--gold)}
-  .response-actions{margin-top:10px;display:flex;gap:8px}
-  .sheets-badge{font-size:9px;letter-spacing:.15em;padding:4px 8px;border:1px solid var(--border);color:var(--muted);margin-left:12px}
-  .sheets-badge.on{color:var(--green);border-color:rgba(74,124,95,.3)}
-  .sheets-badge.off{color:var(--muted)}
-  .toast{position:fixed;bottom:28px;right:28px;background:var(--surface2);border:1px solid var(--border);padding:14px 20px;font-size:11px;letter-spacing:.12em;color:var(--white);z-index:999;transform:translateY(20px);opacity:0;transition:all .3s ease;max-width:320px}
-  .toast.show{transform:translateY(0);opacity:1}
-</style>
-</head>
-<body>
-
-<div id="login-screen">
+  *{margin:0;padding:0;box-sizing:border-box;}
+  :root{--black:#0a0a08;--charcoal:#1c1c1a;--dark-mid:#2a2a27;--muted:#6b6b65;--faint:#9a9a92;--white:#f4f4ee;--amber:#c8832a;--red:#e05555;--green:#4caf7d;}
+  body{font-family:'DM Sans',system-ui,sans-serif;background:var(--black);color:var(--white);line-height:1.6;}
+  .hidden{display:none !important;}
+  #login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}
+  .login-box{width:100%;max-width:360px;border-top:2px solid var(--amber);border-bottom:2px solid var(--amber);padding:36px 0;}
+  .login-box h1{font-family:'Bebas Neue',sans-serif;font-size:40px;letter-spacing:2px;line-height:1;margin-bottom:6px;}
+  .login-box p{color:var(--faint);font-size:14px;margin-bottom:28px;}
+  .or{display:flex;align-items:center;gap:12px;color:var(--muted);font-family:'DM Mono',monospace;font-size:12px;margin:18px 0;}
+  .or::before,.or::after{content:'';flex:1;height:1px;background:var(--dark-mid);}
+  .login-error{color:var(--red);font-size:13px;min-height:20px;margin-top:12px;}
+  .page{max-width:1400px;margin:0 auto;padding:40px 20px;}
+  .header{margin-bottom:32px;padding-bottom:20px;border-bottom:1px solid var(--dark-mid);display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;}
+  .header h1{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:2px;line-height:1;}
+  .header-right{display:flex;gap:10px;align-items:center;font-family:'DM Mono',monospace;font-size:12px;color:var(--faint);flex-wrap:wrap;}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:16px;margin-bottom:28px;}
+  .stat-card{background:var(--dark-mid);padding:18px 20px;border-left:3px solid var(--amber);}
+  .stat-label{font-family:'DM Mono',monospace;font-size:12px;color:var(--faint);margin-bottom:6px;}
+  .stat-number{font-family:'Bebas Neue',sans-serif;font-size:34px;line-height:1;}
+  .filters{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;}
+  .filter-btn{padding:8px 16px;background:var(--dark-mid);border:1px solid var(--muted);color:var(--white);cursor:pointer;font-family:'DM Mono',monospace;font-size:12px;}
+  .filter-btn.active{background:var(--amber);color:#0a0a08;border-color:var(--amber);}
+  button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--amber);outline-offset:2px;}
+  .button{padding:8px 16px;background:var(--amber);color:#0a0a08 !important;border:none;cursor:pointer;font-family:'DM Mono',monospace;font-size:12px;font-weight:500;}
+  .button:hover{opacity:0.9;}
+  .button:disabled{opacity:0.5;cursor:default;}
+  .button.ghost{background:var(--charcoal);color:var(--white) !important;border:1px solid var(--muted);}
+  .button.danger{background:var(--red);color:var(--white) !important;}
+  .button.wide{width:100%;padding:12px;font-size:13px;}
+  .form-group{margin-bottom:16px;}
+  .form-group label{display:block;font-family:'DM Mono',monospace;font-size:12px;color:var(--faint);margin-bottom:6px;}
+  .form-group input,.form-group select,.form-group textarea{width:100%;padding:10px;background:var(--charcoal);border:1px solid var(--muted);color:var(--white);font-family:'DM Sans',sans-serif;font-size:14px;}
+  .form-group textarea{min-height:90px;resize:vertical;}
+  .form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:var(--amber);}
+  .loading{text-align:center;padding:40px;color:var(--faint);font-family:'DM Mono',monospace;font-size:13px;}
+  .error{color:var(--red);}
+  .empty{text-align:center;padding:40px;color:var(--faint);}
+  .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:100;align-items:center;justify-content:center;padding:20px;}
+  .modal.active{display:flex;}
+  .modal-content{background:var(--dark-mid);padding:32px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto;}
+  .modal-content h3{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:1px;margin-bottom:20px;}
+  .modal-buttons{display:flex;gap:12px;margin-top:24px;}
+  .modal-buttons button{flex:1;}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--charcoal);border:1px solid var(--amber);padding:12px 18px;font-family:'DM Mono',monospace;font-size:12px;opacity:0;transition:all .25s;z-index:200;max-width:90vw;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  .toast.bad{border-color:var(--red);}
+  @media (prefers-reduced-motion:reduce){.toast{transition:none;}}
+  .review-list{display:grid;gap:16px;}
+  .review{background:var(--dark-mid);border-left:3px solid var(--green);}
+  .review.is-hidden{border-left-color:var(--muted);opacity:0.85;}
+  .review-top{padding:20px 20px 0;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+  .stars{color:var(--amber);font-size:18px;letter-spacing:2px;}
+  .meta{font-family:'DM Mono',monospace;font-size:12px;color:var(--faint);text-align:right;}
+  .product{padding:8px 20px 0;font-family:'DM Mono',monospace;font-size:12px;color:var(--faint);}
+  .product span{color:var(--white);}
+  .text{padding:12px 20px 16px;font-size:15px;max-width:72ch;}
+  .row{padding:14px 20px;border-top:1px solid var(--charcoal);display:flex;gap:12px;align-items:center;flex-wrap:wrap;}
+  .row label{font-family:'DM Mono',monospace;font-size:12px;color:var(--faint);}
+  .row select{padding:8px 10px;background:var(--charcoal);border:1px solid var(--muted);color:var(--white);font-family:'DM Mono',monospace;font-size:12px;}
+  .row textarea{flex:1 1 100%;min-height:80px;padding:10px;background:var(--charcoal);border:1px solid var(--muted);color:var(--white);font-family:'DM Sans',sans-serif;font-size:14px;resize:vertical;}
+  .verified{color:var(--green);}
+</style></head><body>
+<div id="login" class="hidden">
   <div class="login-box">
-    <h1>ZCC — REVIEWS</h1>
-    <p>Admin Access</p>
-    <input type="password" id="pw" placeholder="PASSWORD">
-    <button onclick="doLogin()">ENTER</button>
-    <div id="login-err" class="login-error">INCORRECT</div>
+    <h1>Zero Chaos Coffee</h1>
+    <p>Sign in to continue.</p>
+    <button type="button" class="button wide" id="passkeyLoginBtn">Sign in with Face ID</button>
+    <div class="or">or use your password</div>
+    <form id="loginForm">
+      <div class="form-group"><label for="loginEmail">Email</label><input type="email" id="loginEmail" autocomplete="username webauthn" required></div>
+      <div class="form-group"><label for="loginPassword">Password</label><input type="password" id="loginPassword" autocomplete="current-password" required></div>
+      <button type="submit" class="button wide ghost" id="loginBtn">Sign in with password</button>
+    </form>
+    <div class="login-error" id="loginError"></div>
   </div>
 </div>
-
-<div id="app">
-  <header>
-    <div class="header-brand">ZCC — REVIEWS <span id="sheets-status" class="sheets-badge off">SHEETS OFF</span></div>
-    <div class="header-right">
-      <div class="header-stats">TOTAL <span id="total-count">0</span> &nbsp; PENDING <span id="pending-count">0</span></div>
-      <button class="btn" onclick="exportCSV()">EXPORT CSV</button>
-      <button class="btn btn-gold" onclick="exportToSheets()">EXPORT TO SHEETS</button>
-      <button class="btn-logout" onclick="doLogout()">LOGOUT</button>
-    </div>
-  </header>
-
-  <div class="filters">
-    <button class="filter-btn active" data-f="ALL" onclick="setFilter(this,'ALL')">ALL</button>
-    <button class="filter-btn" data-f="PENDING" onclick="setFilter(this,'PENDING')">PENDING</button>
-    <button class="filter-btn" data-f="APPROVED" onclick="setFilter(this,'APPROVED')">APPROVED</button>
-    <button class="filter-btn" data-f="UNANSWERED" onclick="setFilter(this,'UNANSWERED')">UNANSWERED</button>
-    <button class="filter-btn" data-f="5" onclick="setFilter(this,'5')">★★★★★</button>
-    <button class="filter-btn" data-f="4" onclick="setFilter(this,'4')">★★★★</button>
-    <button class="filter-btn" data-f="3" onclick="setFilter(this,'3')">≤ 3 STARS</button>
-  </div>
-
-  <div class="reviews-container" id="reviews-container">
-    <div style="text-align:center;padding:60px;color:#555;font-size:11px;letter-spacing:.2em">LOADING REVIEWS...</div>
-  </div>
-</div>
-
 <div class="toast" id="toast"></div>
-
+<div id="app" class="page hidden">
+  <div class="header">
+    <h1>Reviews</h1>
+    <div class="header-right">
+      <span id="whoami"></span>
+      <button class="button ghost" id="exportBtn">Export CSV</button>
+      <button class="button ghost" id="addPasskeyBtn">Add Face ID</button>
+      <button class="button ghost" id="signOutBtn">Sign out</button>
+    </div>
+  </div>
+  <div class="stats">
+    <div class="stat-card"><div class="stat-label">Total</div><div class="stat-number" id="totalCount">0</div></div>
+    <div class="stat-card"><div class="stat-label">Live on site</div><div class="stat-number" id="liveCount">0</div></div>
+    <div class="stat-card"><div class="stat-label">Hidden</div><div class="stat-number" id="hiddenCount">0</div></div>
+    <div class="stat-card"><div class="stat-label">Need a response</div><div class="stat-number" id="unansweredCount">0</div></div>
+    <div class="stat-card"><div class="stat-label">Average rating</div><div class="stat-number" id="avgRating">—</div></div>
+  </div>
+  <div class="filters" id="filters">
+    <button class="filter-btn active" data-f="all">All</button>
+    <button class="filter-btn" data-f="live">Live</button>
+    <button class="filter-btn" data-f="hidden">Hidden</button>
+    <button class="filter-btn" data-f="unanswered">Need a response</button>
+    <button class="filter-btn" data-f="5">5 stars</button>
+    <button class="filter-btn" data-f="4">4 stars</button>
+    <button class="filter-btn" data-f="low">3 or fewer</button>
+  </div>
+  <div id="loading" class="loading">Loading reviews...</div>
+  <div id="list" class="review-list"></div>
+</div>
 <script>
-/* ===== CONFIG ===== */
-const SUPABASE_URL = 'https://nhdypjjikdcpmjjbjalb.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5oZHlwamppa2RjcG1qamJqYWxiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1ODM2OTksImV4cCI6MjA5MzE1OTY5OX0.hF4kQsmUiCnSvHlIsQZMEoNha_xDq5307CNJRbPiypY';
-const PASSWORD = 'ZC2001';
-// PASTE YOUR REVIEWS SHEETS WEB APP URL HERE - LEAVE BLANK TO DISABLE
-const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbwSMrAe48xhSc0yhDUDe3l1yavIBLwBnL5Hv-PBY1fO9Zjr0D13r0qB4oBSjb4_HnGOLQ/exec'; // e.g. https://script.google.com/macros/s/XXXX/exec
+  const SUPABASE_URL = 'https://nhdypjjikdcpmjjbjalb.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5oZHlwamppa2RjcG1qamJqYWxiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1ODM2OTksImV4cCI6MjA5MzE1OTY5OX0.hF4kQsmUiCnSvHlIsQZMEoNha_xDq5307CNJRbPiypY';
+  const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+    auth: { experimental: { passkey: true } }
+  });
+  const $ = id => document.getElementById(id);
 
-let reviews = [];
-let currentFilter = 'ALL';
-
-function esc(s){ if(!s) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-
-async function api(path, method='GET', body){
-  const opts = { method, headers: { 'apikey': SUPABASE_KEY, 'Authorization':'Bearer '+SUPABASE_KEY, 'Content-Type':'application/json' } };
-  if (body) opts.body = JSON.stringify(body);
-  const r = await fetch(SUPABASE_URL+path, opts);
-  if (!r.ok) throw new Error(await r.text());
-  const t = await r.text();
-  return t ? JSON.parse(t) : null;
-}
-
-function doLogin(){
-  if (document.getElementById('pw').value === PASSWORD){
-    document.getElementById('login-screen').style.display='none';
-    document.getElementById('app').style.display='block';
-    initSheetsBadge();
-    loadReviews();
-  } else {
-    document.getElementById('login-err').style.display='block';
+  function esc(s) {
+    if (s === null || s === undefined || s === '') return '—';
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
   }
-}
-function doLogout(){ location.reload(); }
-document.getElementById('pw').addEventListener('keydown', e=>{ if(e.key==='Enter') doLogin(); });
-
-function initSheetsBadge(){
-  const b = document.getElementById('sheets-status');
-  if (SHEETS_URL){ b.textContent='SHEETS ON'; b.className='sheets-badge on'; }
-  else { b.textContent='SHEETS OFF'; b.className='sheets-badge off'; }
-}
-
-async function loadReviews(){
-  try {
-    const data = await api('/rest/v1/Reviews?select=*&order=created_at.desc');
-    reviews = data || [];
-    render();
-  } catch(e){ document.getElementById('reviews-container').innerHTML = '<div style="text-align:center;padding:60px;color:#8b3a3a">ERROR LOADING</div>'; }
-}
-
-function render(){
-  const container = document.getElementById('reviews-container');
-  let filtered = [...reviews];
-  if (currentFilter === 'PENDING') filtered = filtered.filter(r=>r.status==='PENDING');
-  if (currentFilter === 'APPROVED') filtered = filtered.filter(r=>r.status==='APPROVED');
-  if (currentFilter === 'UNANSWERED') filtered = filtered.filter(r=>!r.response || r.response.trim()==='');
-  if (currentFilter === '5') filtered = filtered.filter(r=>r.stars===5);
-  if (currentFilter === '4') filtered = filtered.filter(r=>r.stars===4);
-  if (currentFilter === '3') filtered = filtered.filter(r=>r.stars<=3);
-
-  document.getElementById('total-count').textContent = reviews.length;
-  document.getElementById('pending-count').textContent = reviews.filter(r=>r.status==='PENDING').length;
-
-  if (!filtered.length){
-    container.innerHTML = '<div style="text-align:center;padding:60px;color:#555;font-size:11px">NO REVIEWS FOUND</div>';
-    return;
+  let toastTimer;
+  function toast(msg, bad) {
+    const t = $('toast'); t.textContent = msg; t.className = 'toast show' + (bad ? ' bad' : '');
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => t.className = 'toast', 3200);
   }
 
-  container.innerHTML = filtered.map(r=>{
-    const stars = '★'.repeat(r.stars||5) + '☆'.repeat(5-(r.stars||5));
-    return `
-    <div class="review-card ${r.response?'has-response':''} ${r.status==='PENDING'?'status-pending':''}">
-      <div class="review-card__top">
-        <div class="review-stars">${stars}</div>
-        <div class="review-meta">${esc(r.name||'Anonymous')} <br> ${r.created_at?new Date(r.created_at).toLocaleDateString():''} ${r.verified?'<span class="verified">✔ VERIFIED</span>':''}</div>
-      </div>
-      <div class="review-product">PRODUCT: <span>${esc(r.product||'')}</span></div>
-      ${r.stood_out?`<div class="review-stood-out">STOOD OUT: <span>${esc(r.stood_out)}</span></div>`:''}
-      <div class="review-text">"${esc(r.text||r.review||'')}"</div>
-      <div class="status-area">
-        <div class="status-label">STATUS</div>
-        <select class="status-select" data-id="${r.id}" onchange="updateStatus(this.dataset.id,this.value)">
-          <option value="PENDING" ${r.status==='PENDING'?'selected':''}>PENDING</option>
-          <option value="APPROVED" ${r.status==='APPROVED'?'selected':''}>APPROVED</option>
-          <option value="REJECTED" ${r.status==='REJECTED'?'selected':''}>REJECTED</option>
-        </select>
-      </div>
-      <div class="response-area">
-        <div class="response-label">YOUR RESPONSE</div>
-        <textarea class="response-textarea" data-id="${r.id}" placeholder="Write response...">${esc(r.response||'')}</textarea>
-        <div class="response-actions">
-          <button class="btn btn-gold" data-id="${r.id}" onclick="saveResponse(this.dataset.id)">SAVE</button>
-          <button class="btn" data-id="${r.id}" onclick="clearResponse(this.dataset.id)">REMOVE</button>
+  function showLogin() { $('app').classList.add('hidden'); $('login').classList.remove('hidden'); }
+  function showApp(user) {
+    $('login').classList.add('hidden'); $('app').classList.remove('hidden');
+    $('whoami').textContent = user.email || '';
+    onSignedIn();
+  }
+
+  $('loginForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const btn = $('loginBtn'); btn.disabled = true; btn.textContent = 'Signing in...'; $('loginError').textContent = '';
+    const { data, error } = await db.auth.signInWithPassword({ email: $('loginEmail').value.trim(), password: $('loginPassword').value });
+    btn.disabled = false; btn.textContent = 'Sign in with password';
+    if (error) { $('loginError').textContent = 'Sign-in failed: ' + error.message; return; }
+    $('loginPassword').value = ''; showApp(data.user);
+  });
+
+  $('passkeyLoginBtn').addEventListener('click', async () => {
+    $('loginError').textContent = '';
+    try {
+      const { data, error } = await db.auth.signInWithPasskey();
+      if (error) throw error;
+      showApp(data.user || data.session.user);
+    } catch (err) {
+      $('loginError').textContent = 'Face ID sign-in did not work: ' + (err.message || err) + '. Use your password, then tap "Add Face ID" once signed in.';
+    }
+  });
+
+  $('addPasskeyBtn').addEventListener('click', async () => {
+    try {
+      const { error } = await db.auth.registerPasskey();
+      if (error) throw error;
+      toast('Face ID added. Next time, tap "Sign in with Face ID".');
+    } catch (err) {
+      toast('Could not add Face ID: ' + (err.message || err), true);
+    }
+  });
+
+  $('signOutBtn').addEventListener('click', async () => { await db.auth.signOut(); location.reload(); });
+
+  (async () => {
+    const { data } = await db.auth.getSession();
+    if (data.session) showApp(data.session.user); else showLogin();
+  })();
+  // Google Sheets backup (unchanged from your previous page)
+  const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbwSMrAe48xhSc0yhDUDe3l1yavIBLwBnL5Hv-PBY1fO9Zjr0D13r0qB4oBSjb4_HnGOLQ/exec';
+  let reviews = [], filter = 'all';
+  // The storefront only shows rows where status is exactly 'approved' (lowercase).
+  const isLive = r => r.status === 'approved';
+  function onSignedIn() { loadReviews(); }
+  async function loadReviews() {
+    const { data, error } = await db.from('Reviews').select('*').order('created_at', { ascending: false });
+    if (error) { $('loading').innerHTML = '<span class="error">Could not load reviews: ' + esc(error.message) + '</span>'; return; }
+    reviews = data || []; $('loading').style.display = 'none'; stats(); render();
+  }
+  function stats() {
+    $('totalCount').textContent = reviews.length;
+    $('liveCount').textContent = reviews.filter(isLive).length;
+    $('hiddenCount').textContent = reviews.filter(r => !isLive(r)).length;
+    $('unansweredCount').textContent = reviews.filter(r => !r.response || !r.response.trim()).length;
+    const rated = reviews.filter(r => r.rating);
+    $('avgRating').textContent = rated.length ? (rated.reduce((a, r) => a + Number(r.rating), 0) / rated.length).toFixed(1) : '—';
+  }
+  function render() {
+    let rows = reviews;
+    if (filter === 'live') rows = rows.filter(isLive);
+    if (filter === 'hidden') rows = rows.filter(r => !isLive(r));
+    if (filter === 'unanswered') rows = rows.filter(r => !r.response || !r.response.trim());
+    if (filter === '5') rows = rows.filter(r => Number(r.rating) === 5);
+    if (filter === '4') rows = rows.filter(r => Number(r.rating) === 4);
+    if (filter === 'low') rows = rows.filter(r => Number(r.rating) <= 3);
+    if (!rows.length) { $('list').innerHTML = '<div class="empty">No reviews in this view.</div>'; return; }
+    $('list').innerHTML = rows.map(r => {
+      const n = Math.max(0, Math.min(5, Number(r.rating) || 0));
+      const status = isLive(r) ? 'approved' : (r.status === 'rejected' ? 'rejected' : 'pending');
+      return `<div class="review ${isLive(r) ? '' : 'is-hidden'}">
+        <div class="review-top">
+          <div class="stars" aria-label="${n} of 5 stars">${'★'.repeat(n)}${'☆'.repeat(5 - n)}</div>
+          <div class="meta">${esc(r.name)}${r.verified ? ' <span class="verified">✔ verified</span>' : ''}<br>${r.created_at ? new Date(r.created_at).toLocaleDateString() : ''}</div>
         </div>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-async function updateStatus(id, status){
-  try { await api('/rest/v1/Reviews?id=eq.'+id, 'PATCH', {status}); const r = reviews.find(x=>x.id===id); if(r){ r.status = status; syncToSheets(r); } showToast('STATUS UPDATED'); loadReviews(); }
-  catch(e){ showToast('UPDATE FAILED','error'); }
-}
-async function saveResponse(id){
-  const textarea = document.querySelector(`.response-textarea[data-id="${id}"]`);
-  const response = textarea.value;
-  try { await api('/rest/v1/Reviews?id=eq.'+id, 'PATCH', {response}); const r = reviews.find(x=>x.id===id); if(r){ r.response = response; syncToSheets(r); } showToast('RESPONSE SAVED'); loadReviews(); }
-  catch(e){ showToast('SAVE FAILED','error'); }
-}
-async function clearResponse(id){
-  try { await api('/rest/v1/Reviews?id=eq.'+id, 'PATCH', {response:''}); const r = reviews.find(x=>x.id===id); if(r){ r.response = ''; syncToSheets(r); } showToast('RESPONSE REMOVED'); loadReviews(); }
-  catch(e){ showToast('REMOVE FAILED','error'); }
-}
-function setFilter(btn, f){
-  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active'); currentFilter = f; render();
-}
-
-/* ===== SHEETS AUTO-SYNC - fires on every successful save, $0, silent ===== */
-async function syncToSheets(r){
-  if (!SHEETS_URL || !r) return;
-  const payload = {
-    timestamp: r.created_at || new Date().toISOString(),
-    date: r.created_at || '',
-    name: r.name || '',
-    stars: r.stars || '',
-    product: r.product || '',
-    stood_out: r.stood_out || '',
-    text: r.text || r.review || '',
-    status: r.status || '',
-    response: r.response || '',
-    verified: r.verified ? 'YES' : 'NO'
-  };
-  try { await fetch(SHEETS_URL, {method:'POST', mode:'no-cors', body: JSON.stringify(payload)}); }
-  catch(e){ console.warn('Sheets sync failed', e); }
-}
-
-/* ===== SHEETS EXPORT - $0 backup, does not affect Supabase quota ===== */
-async function exportToSheets(){
-  if (!SHEETS_URL){ showToast('Set SHEETS_URL first','error'); return; }
-  if (!reviews.length){ showToast('No reviews','error'); return; }
-  showToast('Exporting '+reviews.length+' to Sheets...');
-  for (const r of reviews){
-    await syncToSheets(r);
-    await new Promise(res=>setTimeout(res, 400));
+        <div class="product">Product: <span>${esc(r.product_title)}</span>${r.stood_out ? ` · Stood out: <span>${esc(r.stood_out)}</span>` : ''}</div>
+        <div class="text">${esc(r.review)}</div>
+        <div class="row">
+          <label for="st-${esc(r.id)}">Status</label>
+          <select id="st-${esc(r.id)}" data-status="${esc(r.id)}">
+            <option value="approved" ${status === 'approved' ? 'selected' : ''}>Live on site</option>
+            <option value="pending" ${status === 'pending' ? 'selected' : ''}>Hidden (pending)</option>
+            <option value="rejected" ${status === 'rejected' ? 'selected' : ''}>Hidden (rejected)</option>
+          </select>
+        </div>
+        <div class="row">
+          <label for="rs-${esc(r.id)}">Your response</label>
+          <textarea id="rs-${esc(r.id)}" placeholder="Write a response...">${r.response ? esc(r.response) : ''}</textarea>
+          <button class="button" data-save="${esc(r.id)}">Save response</button>
+          <button class="button ghost" data-clear="${esc(r.id)}">Remove response</button>
+        </div>
+      </div>`;
+    }).join('');
   }
-  showToast('Exported to Sheets','success');
-}
-
-function exportCSV(){
-  if (!reviews.length) return;
-  const headers = ['Date','Name','Stars','Product','Stood Out','Review','Status','Response'];
-  const rows = reviews.map(r=>[r.created_at, r.name, r.stars, r.product, r.stood_out, r.text||r.review, r.status, r.response].map(v=>`"${String(v||'').replace(/"/g,'""')}"`).join(','));
-  const csv = [headers.join(','), ...rows].join('\n');
-  const blob = new Blob([csv], {type:'text/csv'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href=url; a.download='zcc-reviews-'+new Date().toISOString().split('T')[0]+'.csv'; a.click(); URL.revokeObjectURL(url);
-}
-
-function showToast(msg, type=''){
-  const t = document.getElementById('toast'); t.textContent = msg.toUpperCase(); t.className = 'toast show '+(type==='error'?'':''); 
-  setTimeout(()=>t.className='toast', 3000);
-}
-</script>
-</body>
-</html>
+  async function patch(id, fields, okMsg) {
+    const { data, error } = await db.from('Reviews').update(fields).eq('id', id).select();
+    if (error || !data || !data.length) { toast('Update failed: ' + (error ? error.message : 'no row updated'), true); return; }
+    const i = reviews.findIndex(x => x.id === id); reviews[i] = data[0];
+    syncToSheets(data[0]); stats(); render(); toast(okMsg);
+  }
+  $('list').addEventListener('change', e => {
+    const sel = e.target.closest('[data-status]'); if (!sel) return;
+    patch(sel.dataset.status, { status: sel.value }, sel.value === 'approved' ? 'Review is live on the site' : 'Review hidden from the site');
+  });
+  $('list').addEventListener('click', e => {
+    const s = e.target.closest('[data-save]'), c = e.target.closest('[data-clear]');
+    if (s) patch(s.dataset.save, { response: $('rs-' + s.dataset.save).value.trim(), responded_at: new Date().toISOString() }, 'Response saved');
+    if (c) patch(c.dataset.clear, { response: null, responded_at: null }, 'Response removed');
+  });
+  $('filters').addEventListener('click', e => { const b = e.target.closest('.filter-btn'); if (!b) return;
+    document.querySelectorAll('.filter-btn').forEach(x => x.classList.remove('active')); b.classList.add('active'); filter = b.dataset.f; render(); });
+  async function syncToSheets(r) {
+    if (!SHEETS_URL || !r) return;
+    try { await fetch(SHEETS_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({
+      timestamp: r.created_at || new Date().toISOString(), date: r.created_at || '', name: r.name || '', stars: r.rating || '',
+      product: r.product_title || '', stood_out: r.stood_out || '', text: r.review || '', status: r.status || '',
+      response: r.response || '', verified: r.verified ? 'YES' : 'NO' }) }); } catch (e) { console.warn('Sheets sync failed', e); }
+  }
+  $('exportBtn').addEventListener('click', () => {
+    if (!reviews.length) return;
+    const head = ['Date','Name','Rating','Product','Stood Out','Review','Status','Response'];
+    const rows = reviews.map(r => [r.created_at, r.name, r.rating, r.product_title, r.stood_out, r.review, r.status, r.response].map(v => `"${String(v ?? '').replace(/"/g,'""')}"`).join(','));
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([[head.join(','), ...rows].join('\n')], { type: 'text/csv' }));
+    a.download = 'zcc-reviews-' + new Date().toISOString().split('T')[0] + '.csv'; a.click();
+  });
+</script></body></html>
