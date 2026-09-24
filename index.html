@@ -89,6 +89,7 @@
     <h1>Reviews</h1>
     <div class="header-right">
       <span id="whoami"></span>
+      <button class="button ghost" id="sheetsBtn">Export to Sheets</button>
       <button class="button ghost" id="exportBtn">Export CSV</button>
       <button class="button ghost" id="addPasskeyBtn">Add Face ID</button>
       <button class="button ghost" id="signOutBtn">Sign out</button>
@@ -259,5 +260,12 @@
     const rows = reviews.map(r => [r.created_at, r.name, r.rating, r.product_title, r.stood_out, r.review, r.status, r.response].map(v => `"${String(v ?? '').replace(/"/g,'""')}"`).join(','));
     const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([[head.join(','), ...rows].join('\n')], { type: 'text/csv' }));
     a.download = 'zcc-reviews-' + new Date().toISOString().split('T')[0] + '.csv'; a.click();
+  });
+
+  $('sheetsBtn').addEventListener('click', async () => {
+    if (!reviews.length) { toast('No reviews to export', true); return; }
+    const btn = $('sheetsBtn'); btn.disabled = true;
+    for (let i = 0; i < reviews.length; i++) { btn.textContent = `Exporting ${i + 1}/${reviews.length}`; await syncToSheets(reviews[i]); await new Promise(r => setTimeout(r, 400)); }
+    btn.disabled = false; btn.textContent = 'Export to Sheets'; toast('Sent ' + reviews.length + ' reviews to Sheets');
   });
 </script></body></html>
