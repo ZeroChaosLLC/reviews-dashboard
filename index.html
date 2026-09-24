@@ -144,7 +144,7 @@ function initSheetsBadge(){
 
 async function loadReviews(){
   try {
-    const data = await api('/rest/v1/reviews?select=*&order=created_at.desc');
+    const data = await api('/rest/v1/Reviews?select=*&order=created_at.desc');
     reviews = data || [];
     render();
   } catch(e){ document.getElementById('reviews-container').innerHTML = '<div style="text-align:center;padding:60px;color:#8b3a3a">ERROR LOADING</div>'; }
@@ -200,22 +200,41 @@ function render(){
 }
 
 async function updateStatus(id, status){
-  try { await api('/rest/v1/reviews?id=eq.'+id, 'PATCH', {status}); showToast('STATUS UPDATED'); loadReviews(); }
+  try { await api('/rest/v1/Reviews?id=eq.'+id, 'PATCH', {status}); const r = reviews.find(x=>x.id===id); if(r){ r.status = status; syncToSheets(r); } showToast('STATUS UPDATED'); loadReviews(); }
   catch(e){ showToast('UPDATE FAILED','error'); }
 }
 async function saveResponse(id){
   const textarea = document.querySelector(`.response-textarea[data-id="${id}"]`);
   const response = textarea.value;
-  try { await api('/rest/v1/reviews?id=eq.'+id, 'PATCH', {response}); showToast('RESPONSE SAVED'); loadReviews(); }
+  try { await api('/rest/v1/Reviews?id=eq.'+id, 'PATCH', {response}); const r = reviews.find(x=>x.id===id); if(r){ r.response = response; syncToSheets(r); } showToast('RESPONSE SAVED'); loadReviews(); }
   catch(e){ showToast('SAVE FAILED','error'); }
 }
 async function clearResponse(id){
-  try { await api('/rest/v1/reviews?id=eq.'+id, 'PATCH', {response:''}); showToast('RESPONSE REMOVED'); loadReviews(); }
+  try { await api('/rest/v1/Reviews?id=eq.'+id, 'PATCH', {response:''}); const r = reviews.find(x=>x.id===id); if(r){ r.response = ''; syncToSheets(r); } showToast('RESPONSE REMOVED'); loadReviews(); }
   catch(e){ showToast('REMOVE FAILED','error'); }
 }
 function setFilter(btn, f){
   document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active'); currentFilter = f; render();
+}
+
+/* ===== SHEETS AUTO-SYNC - fires on every successful save, $0, silent ===== */
+async function syncToSheets(r){
+  if (!SHEETS_URL || !r) return;
+  const payload = {
+    timestamp: new Date().toISOString(),
+    date: r.created_at || '',
+    name: r.name || '',
+    stars: r.stars || '',
+    product: r.product || '',
+    stood_out: r.stood_out || '',
+    text: r.text || r.review || '',
+    status: r.status || '',
+    response: r.response || '',
+    verified: r.verified ? 'YES' : 'NO'
+  };
+  try { await fetch(SHEETS_URL, {method:'POST', mode:'no-cors', body: JSON.stringify(payload)}); }
+  catch(e){ console.warn('Sheets sync failed', e); }
 }
 
 /* ===== SHEETS EXPORT - $0 backup, does not affect Supabase quota ===== */
